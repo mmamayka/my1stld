@@ -54,8 +54,14 @@ inline static void pcxt_data_dump(pctx_data_t const* pctx_data) {
             entry->tag != AT_NULL; ++entry) {
         switch(entry->tag) {
         case AT_ENTRY:
-            printf("\t\tentry_addr = %"PRIx64"\n");
+            printf("\t\tentry_addr = %"PRIx64"\n", entry->value);
             break;
+        case AT_PHDR:
+            printf("\t\tphdr_addr = %"PRIx64"\n", entry->value);
+            break;
+
+        case AT_EXECFD:
+            printf("\t\tprogfd = %"PRId64"\n", entry->value);
 
         default:
             printf("\t\tunknown entry\n");
