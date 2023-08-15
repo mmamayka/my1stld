@@ -9,6 +9,8 @@ typedef struct {
     uint64_t value;
 } pctx_aux_entry_t;
 
+typedef void(*entry_t)(void);
+
 typedef struct {
     uint64_t argc;
     char const** argv;
@@ -78,4 +80,12 @@ void entry(void* pctx) {
     pcxt_parse(pctx, &pctx_data);
 
     pcxt_data_dump(&pctx_data);
+
+    for(pctx_aux_entry_t const* entry = pctx_data.auxv; 
+            entry->tag != AT_NULL; ++entry) {
+        if(entry->tag == AT_ENTRY) {
+            printf("passing control to the client process...\n");
+            ((entry_t)entry->value)();
+        }
+    }
 }
