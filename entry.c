@@ -1,6 +1,8 @@
 #include <stdint.h>
 #include <inttypes.h>
+
 #include <linux/auxvec.h>
+#include <linux/elf.h>
 
 #include "printf.h"
 
@@ -55,15 +57,51 @@ inline static void pcxt_data_dump(pctx_data_t const* pctx_data) {
     for(pctx_aux_entry_t const* entry = pctx_data->auxv; 
             entry->tag != AT_NULL; ++entry) {
         switch(entry->tag) {
+        case AT_IGNORE:
+            printf("\t\tAT_IGNORE\n");
+            break;
         case AT_ENTRY:
-            printf("\t\tentry_addr = %"PRIx64"\n", entry->value);
+            printf("\t\tAT_ENTRY = %"PRIx64"\n", entry->value);
+            break;
+        case AT_EXECFD:
+            printf("\t\tAT_EXECFD = %"PRId64"\n", entry->value);
             break;
         case AT_PHDR:
-            printf("\t\tphdr_addr = %"PRIx64"\n", entry->value);
+            printf("\t\tAT_PHDR = %"PRIx64"\n", entry->value);
             break;
-
-        case AT_EXECFD:
-            printf("\t\tprogfd = %"PRId64"\n", entry->value);
+        case AT_PHENT:
+            printf("\t\tAT_PHENT = %"PRId64"\n", entry->value);
+            break;
+        case AT_PHNUM:
+            printf("\t\tAT_PHNUM = %"PRId64"\n", entry->value);
+            break;
+        case AT_PAGESZ:
+            printf("\t\tAT_PAGESZ = %"PRId64"\n", entry->value);
+            break;
+        case AT_BASE:
+            printf("\t\tAT_BASE = %"PRIx64"\n", entry->value);
+            break;
+        case AT_FLAGS:
+            printf("\t\tAT_FLAGS = %"PRIx64"\n", entry->value);
+            break;
+        case AT_NOTELF:
+            printf("\t\tAT_NOTELF\n");
+            break;
+        case AT_UID:
+            printf("\t\tAT_UID = %"PRId64"\n", entry->value);
+            break;
+        case AT_EUID:
+            printf("\t\tAT_EUID = %"PRId64"\n", entry->value);
+            break;
+        case AT_GID:
+            printf("\t\tAT_GID = %"PRId64"\n", entry->value);
+            break;
+        case AT_EGID:
+            printf("\t\tAT_EGID = %"PRId64"\n", entry->value);
+            break;
+        case AT_PLATFORM:
+            printf("\t\tAT_PLATFORM = \'%s\'\n", (char const*)entry->value);
+            break;
 
         default:
             printf("\t\tunknown entry\n");
