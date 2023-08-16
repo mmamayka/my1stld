@@ -6,6 +6,18 @@
 
 #include "printf.h"
 
+__attribute((noreturn))
+extern void exit(int exit_code);
+
+#define LD_ERROR_EXIT_CODE 2
+#define LD_ERROR(condition, format, ...) \
+    do { \
+        if(!condition) { \
+            printf(format, __VA_ARGS__); \
+            exit(LD_ERROR_EXIT_CODE); \
+        } \
+    while(0);
+
 typedef struct {
     int type;
     union {
@@ -72,7 +84,6 @@ inline static void pctx_sysv_header_parse(void const* pctx,
 inline static void pcxt_parse(void const* pctx, pctx_data_t* pctx_data) {
     pctx_data_init(pctx_data);
     pctx_sysv_header_parse(pctx, pctx_data);
-
     pctx_auxv_parse(pctx_data);
 }
 
@@ -144,6 +155,91 @@ inline static void pcxt_data_dump(pctx_data_t const* pctx_data) {
     }
 }
 
+inline static void dump_phdr_type(Elf64_Phdr const* phdr) {
+    switch(phdr->p_type) {
+    case PT_NULL:
+        printf("\t\tp_type = PT_NULL\n");
+        break;
+    case PT_LOAD:
+        printf("\t\tp_type = PT_LOAD\n");
+        break;
+    case PT_DYNAMIC:
+        printf("\t\tp_type = PT_DYNAMIC\n");
+        break;
+    case PT_INTERP:
+        printf("\t\tp_type = PT_INTERP\n");
+        break;
+    case PT_NOTE :
+        printf("\t\tp_type = PT_NOTE\n");
+        break;
+    case PT_SHLIB:
+        printf("\t\tp_type = PT_SHLIB\n");
+        break;
+    case PT_PHDR:
+        printf("\t\tp_type = PT_PHDR\n");
+        break;
+    case PT_TLS:
+        printf("\t\tp_type = PT_TLS\n");
+        break;
+    default:
+        printf("\t\tp_type is unknown\n");
+        break;
+    }
+}
+
+inline static void dump_phdr(Elf64_Phdr const* phdr) {
+    dump_phdr_type(phdr);
+    printf("\t\tp_offset = %li\n", (long)phdr->p_offset);
+    printf("\t\tp_vaddr = %li\n", (long)phdr->p_vaddr);
+    printf("\t\tp_paddr = %li\n", (long)phdr->p_paddr);
+    printf("\t\tp_memsz = %li\n", (long)phdr->p_memsz);
+    printf("\t\tp_filesz = %li\n", (long)phdr->p_filesz);
+    printf("\t\tp_align = %li\n", (long)phdr->p_align);
+    printf("\t\tp_flags = %li\n", (long)phdr->p_flags);
+}
+
+inline static void dump_phdrs(pctx_data_t const* pctx_data) {
+    if(pctx_data->std_auxv[AT_PHDR].type != AT_PHDR) {
+        printf("PHDRs not present\n");
+        return;
+    }
+
+    Elf64_Phdr const* phdrs = 
+        (Elf64_Phdr const*)pctx_data->std_auxv[AT_PHDR].ptr;
+    Elf64_Phdr const* phdrs_end = phdrs + pctx_data->std_auxv[AT_PHNUM].val;
+
+    printf("PHDRs:\n");
+    for(Elf64_Phdr const* phdr = phdrs; phdr < phdrs_end; ++phdr) {
+        printf("\tPHDR\n");
+        dump_phdr(phdr);
+    }
+}
+
+typedef struct {
+    Elf64_Dyn const* dynamic;
+} dso_t;
+
+void parse_dso(dso_t* dso, pctx_data_t const* pctx_data) {
+    Elf64_Phdr const* dynamic_phdr = NULL;
+
+    Elf64_Phdr const* phdrs = 
+        (Elf64_Phdr const*)pctx_data->std_auxv[AT_PHDR].ptr;
+    Elf64_Phdr const* phdrs_end = phdrs + pctx_data->std_auxv[AT_PHNUM].val;
+    for(Elf64_Phdr const* phdr = phdrs; phdr < phdrs_end; ++phdr) {
+        if(phdr->p_type == PT_DYNAMIC) {
+            dynamic_phdr = phdr;
+        }
+    }
+
+    if(dynamic_phdr == NULL) {
+        return;
+    }
+
+    dso->dynamic = (Elf64_Dyn const*)(
+        (uint8_t const*)pctx_data->std_auxv[AT_BASE].ptr + 
+            dynamic_phdr->p_offset);
+}
+
 // __attribute__((noreturn))
 void entry(void* pctx) {
     printf("m1stld started successfully!\n");
@@ -153,6 +249,13 @@ void entry(void* pctx) {
 #ifndef NDEBUG
     pcxt_data_dump(&pctx_data);
 #endif /* NDEBUG */
+
+#ifndef NDEBUG
+    dump_phdrs(&pctx_data);
+#endif /* NDEBUG */
+
+    dso_t dso;
+    parse_dso(&dso, &pctx_data);
 
     if(pctx_data.std_auxv[AT_ENTRY].type == AT_ENTRY) {
         pctx_data.std_auxv[AT_ENTRY].func();

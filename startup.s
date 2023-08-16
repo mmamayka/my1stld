@@ -42,3 +42,8 @@ _putchar:
     pop %rdi
 
     ret
+
+.global exit
+exit:
+    mov $__NR_exit, %rax
+    syscall
