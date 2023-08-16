@@ -55,15 +55,13 @@ inline static void pctx_data_init(pctx_data_t* pctx_data) {
     }
 }
 
-inline static int pctx_auxv_parse(pctx_data_t* pctx_data) {
+inline static void pctx_auxv_parse(pctx_data_t* pctx_data) {
     for(pctx_aux_entry_t const* entry = pctx_data->auxv; 
             entry->type != AT_NULL; ++entry) {
         if(entry->type < PCTX_N_STD_AUXV_ENTRIES) {
             pctx_data->std_auxv[entry->type] = *entry;
         }
     }
-
-    return 0;
 }
 
 inline static void pctx_sysv_header_parse(void const* pctx, 
