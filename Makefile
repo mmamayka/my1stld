@@ -1,20 +1,12 @@
 
-AS := gcc -c
-CC := gcc
-LD := gcc
+BUILD_DIR := build
+JOBS ?= 4
 
-ASFLAGS := -x assembler-with-cpp
-CFLAGS := -Wall -Wextra -O2 -g -fno-stack-protector
-LDFLAGS := -nostdlib -nodefaultlibs
+.PHONY: test
+test: build
+	make -C $(BUILD_DIR) -j $(JOBS) test
 
-.PHONY: run
-run: test
-	./test
-
-ld-dynamic.so: startup.o entry.o printf.o
-	$(LD) -o $@ $^ -Wl,--entry=startup -nostdlib -nodefaultlibs \
-		-Wl,--no-undefined -fPIC
-	strip --remove-section=.interp $@
-
-test: test.o ld-dynamic.so
-	$(LD) -o $@ $< -Wl,--dynamic-linker=$(CURDIR)/ld-dynamic.so -nostdlib
+.PHONY: build
+build:
+	cmake -B $(BUILD_DIR) -S .
+	make -C $(BUILD_DIR) -j $(JOBS)
