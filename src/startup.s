@@ -29,16 +29,3 @@ startup:
     mov $__NR_exit, %rax
     syscall
 
-.global _putchar
-_putchar:
-    push %rdi
-
-    mov %rsp, %rsi
-    mov $1, %rdi
-    mov $1, %rdx
-    mov $__NR_write, %rax
-    syscall
-
-    pop %rdi
-
-    ret
