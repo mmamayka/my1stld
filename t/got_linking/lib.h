@@ -1,0 +1,6 @@
+#ifndef MY1STLD_TEST_GOT_LINKING_TEST_LIB_H
+#define MY1STLD_TEST_GOT_LINKING_TEST_LIB_H
+
+extern int so_variable;
+
+#endif /* MY1STLD_TEST_GOT_LINKING_TEST_LIB_H */

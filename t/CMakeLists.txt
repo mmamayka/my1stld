@@ -7,6 +7,15 @@ set(TEST_LDFLAGS -nostartfiles -nodefaultlibs
 )
 set(TEST_ASMFLAGS -x assembler-with-cpp)
 
+add_library(test_util STATIC)
+target_compile_options(test_util PRIVATE 
+    $<$<COMPILE_LANGUAGE:C>:${TEST_CFLAGS}>
+    $<$<COMPILE_LANGUAGE:ASM>:${TEST_ASMFLAGS}>
+)
+target_sources(test_util PRIVATE util/exit.s)
+
+# startup test
+
 add_executable(startup_test)
 
 target_compile_options(startup_test PRIVATE
@@ -19,3 +28,7 @@ target_link_options(startup_test PRIVATE ${TEST_LDFLAGS})
 target_sources(startup_test PRIVATE startup_test.s)
 
 add_test(NAME startup_test COMMAND startup_test)
+
+# got linking test
+
+add_subdirectory(got_linking)
