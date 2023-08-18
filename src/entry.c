@@ -5,7 +5,7 @@
 #include <linux/auxvec.h>
 #include <linux/elf.h>
 
-#include "printf.h"
+#include "tinylibc.h"
 
 #ifndef NDEBUG
 #   define DEBUG_LOG(...) \

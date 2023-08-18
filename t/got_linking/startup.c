@@ -1,7 +1,7 @@
-#include "util.h"
 #include "lib.h"
+#include "tinylibc.h"
 
 void _start() {
-    so_variable++;
+    assert(so_variable == 1);
     exit(0);
 }

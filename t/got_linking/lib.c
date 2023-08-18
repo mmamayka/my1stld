@@ -1,2 +1,2 @@
 
-int so_variable = 0;
+int so_variable = 1;

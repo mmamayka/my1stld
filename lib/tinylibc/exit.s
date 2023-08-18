@@ -1,5 +1,5 @@
 
-#include <syscall.h>
+#include <asm/unistd.h>
 
 .section .text, "ax", @progbits
 

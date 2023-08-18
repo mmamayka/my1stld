@@ -1,13 +1,7 @@
 
-
-#include <asm/unistd.h>
+#include <syscall.h>
 
 .section .text, "ax", @progbits
-
-.global exit
-exit:
-    mov $1, %rdi
-    syscall
 
 .global _putchar
 _putchar:
